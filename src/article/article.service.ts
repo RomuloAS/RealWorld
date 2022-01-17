@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { QueryListDTO, QueryFeedDTO, CreateArticleDTO, UpdateArticleDTO, AddCommentDTO } from './dto/article.dto';
 import { ArticleData, CommentData } from './article.interface';
+const slugify = require('slugify');
 
 @Injectable()
 export class ArticleService {
@@ -21,6 +22,38 @@ export class ArticleService {
   }
 
   async createArticle(user, createArticleDTO: CreateArticleDTO): Promise<ArticleData> {
+
+    const { title, description, body, tagList } = createArticleDTO;
+    const { username } = user;
+    const slug = slugify(title);
+    const tags = tagList.map( item => {
+      const tag = item.toString();
+      return { where: {tag: tag}, create: {tag: tag} };
+    })
+
+    const notUnique = await this.prisma.article.findFirst({
+      where: {title: title}
+    });
+
+    if (notUnique) {
+      throw new HttpException({
+        message: 'Creation of a new article failed',
+        errors: {article: 'Article must be unique'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const data = {title: title,
+                  description: description,
+                  body: body,
+                  slug: slug,
+                  tags: {connectOrCreate: tags},
+                  author: {connect: {username: username}}
+                };
+
+    const article = await this.prisma.article.create({
+      data: data
+    });
+
     return null;
   }
 
