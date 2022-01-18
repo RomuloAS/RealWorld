@@ -18,6 +18,10 @@ export interface ArticleData {
   }
 }
 
+export interface ArticlesData {
+  articles: ArticleData['article'][];
+}
+
 export interface CommentData {
 
   comment: {
@@ -32,4 +36,8 @@ export interface CommentData {
       following: boolean
     } 
   }
+}
+
+export interface CommentsData {
+  comments: CommentData['comment'][];
 }

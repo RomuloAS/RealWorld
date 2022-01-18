@@ -1,7 +1,7 @@
 import { Controller, Body, Get, Post, Put, Delete, Param, Query, UsePipes, UseGuards } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { User } from '../user/user.decorator';
-import { ArticleData, CommentData } from './article.interface';
+import { ArticleData, ArticlesData, CommentData, CommentsData } from './article.interface';
 import { JwtAuthGuard } from '../common/auth/jwt-auth.guard';
 import { IsAuthOptional } from '../common/auth/auth.decorator';
 import { QueryListDTO, QueryFeedDTO, CreateArticleDTO, UpdateArticleDTO, AddCommentDTO } from './dto/article.dto';
@@ -16,14 +16,14 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   @UsePipes(ValidationPipe)
   @IsAuthOptional()
-  async listArticles(@User() user, @Query() query: QueryListDTO): Promise<ArticleData[]> {
+  async listArticles(@User() user, @Query() query: QueryListDTO): Promise<ArticlesData> {
     return await this.articleService.listArticles(user, query);
   }
 
   @Get('feed')
   @UseGuards(JwtAuthGuard)
   @UsePipes(ValidationPipe)
-  async feedArticles(@User() user, @Query() query: QueryFeedDTO): Promise<ArticleData[]> {
+  async feedArticles(@User() user, @Query() query: QueryFeedDTO): Promise<ArticlesData> {
     return await this.articleService.feedArticles(user, query);
   }
 
@@ -65,7 +65,7 @@ export class ArticleController {
   @Get(':slug/comments')
   @UseGuards(JwtAuthGuard)
   @IsAuthOptional()
-  async getCommentsFromArticle(@User() user, @Param('slug') slug: string): Promise<CommentData[]> {
+  async getCommentsFromArticle(@User() user, @Param('slug') slug: string): Promise<CommentsData> {
     return await this.articleService.getCommentsFromArticle(user, slug);
   }
 

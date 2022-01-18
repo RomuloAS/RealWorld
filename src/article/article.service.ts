@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { QueryListDTO, QueryFeedDTO, CreateArticleDTO, UpdateArticleDTO, AddCommentDTO } from './dto/article.dto';
-import { ArticleData, CommentData } from './article.interface';
+import { ArticleData, ArticlesData, CommentData, CommentsData } from './article.interface';
 const slugify = require('slugify');
 
 const TagsSelect = {
@@ -39,16 +39,87 @@ export class ArticleService {
 
   constructor(private prisma: PrismaService){}
 
-  async listArticles(user, query: QueryListDTO): Promise<ArticleData[]> {
-    return null;
+  async listArticles(user, query: QueryListDTO): Promise<ArticlesData> {
+
+    const { tag, author, favorited, limit, offset } = query;
+    const where = {};
+
+    if (tag) {
+      where['tags'] = {some: {tag: tag}};
+    };
+    if (author) {
+      where['author'] = {username: author};
+    };
+    if (favorited) {
+      where['favoritedBy'] = {some: {username: favorited}}
+    }
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: user ? user.username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    ArticleSelect['favoritedBy'] = {select: authorSelect}
+
+    const articles = await this.prisma.article.findMany({
+      where: where,
+      select: ArticleSelect,
+      skip: offset,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return {articles: articles.map(article => this.createArticleData(article)['article'])};
   }
 
-  async feedArticles(user, query: QueryFeedDTO): Promise<ArticleData[]> {
-    return null;
+  async feedArticles(user, query: QueryFeedDTO): Promise<ArticlesData> {
+
+    const { limit, offset } = query;
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: user ? user.username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    ArticleSelect['favoritedBy'] = {select: authorSelect}
+
+    const articles = await this.prisma.article.findMany({
+      where: {author: {username: user.username}},
+      select: ArticleSelect,
+      skip: offset,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return {articles: articles.map(article => this.createArticleData(article)['article'])};
   }
 
   async getArticle(slug: string): Promise<ArticleData> {
-    return null;
+
+    const article = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: ArticleSelect
+    });
+
+    if (!article) {
+      this.ArticleNotFound();
+    }
+
+    return this.createArticleData(article);
   }
 
   async createArticle(user, createArticleDTO: CreateArticleDTO): Promise<ArticleData> {
@@ -133,7 +204,7 @@ export class ArticleService {
     return null;
   }
 
-  async getCommentsFromArticle(user, slug: string): Promise<CommentData[]> {
+  async getCommentsFromArticle(user, slug: string): Promise<CommentsData> {
     return null;
   }
 
@@ -154,8 +225,8 @@ export class ArticleService {
     const { bio, image } = profile;
 
     const tagList = tags.length ? tags.map(item => item['tag']) : [];
-    const following = followedBy.length ? true : false
-    const favorited = favoritedBy.length ? true : false
+    const following = followedBy && followedBy.length ? true : false
+    const favorited = favoritedBy && favoritedBy.length ? true : false
     const favoritesCount = _count.favoritedBy;
 
     const ArticleProfile = {
@@ -179,6 +250,13 @@ export class ArticleService {
     };
 
     return ArticleProfile;
+  }
+
+  private ArticleNotFound(){
+    throw new HttpException({
+        message: 'Article Not Found',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.NOT_FOUND);
   }
 
 }
