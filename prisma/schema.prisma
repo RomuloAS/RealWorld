@@ -53,13 +53,12 @@ model Tag {
 }
 
 model Comment {
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
+  id        Int      @id @default(autoincrement())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
   article   Article  @relation(fields: [articleId], references: [id])
   articleId Int
   body      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@id([userId, articleId])
 }

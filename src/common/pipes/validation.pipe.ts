@@ -6,11 +6,12 @@ import { plainToClass } from 'class-transformer';
 export class ValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
 
+    const object = plainToClass(metatype, value);
+
     if (!metatype || !this.toValidate(metatype)) {
-      return value;
+      return object;
     }
 
-    const object = plainToClass(metatype, value);
     const errors = await validate(object, { whitelist: true,
                                             forbidNonWhitelisted: true 
                                           });

@@ -8,13 +8,13 @@ import { QueryListDTO, QueryFeedDTO, CreateArticleDTO, UpdateArticleDTO, AddComm
 import { ValidationPipe } from '../common/pipes/validation.pipe';
 
 @Controller('articles')
+@UsePipes(ValidationPipe)
 export class ArticleController {
 
   constructor(private readonly articleService: ArticleService) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  @UsePipes(ValidationPipe)
   @IsAuthOptional()
   async listArticles(@User() user, @Query() query: QueryListDTO): Promise<ArticlesData> {
     return await this.articleService.listArticles(user, query);
@@ -22,7 +22,6 @@ export class ArticleController {
 
   @Get('feed')
   @UseGuards(JwtAuthGuard)
-  @UsePipes(ValidationPipe)
   async feedArticles(@User() user, @Query() query: QueryFeedDTO): Promise<ArticlesData> {
     return await this.articleService.feedArticles(user, query);
   }
@@ -34,7 +33,6 @@ export class ArticleController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @UsePipes(ValidationPipe)
   async createArticle(@User() user,
                           @Body('article') createArticleDTO: CreateArticleDTO): Promise<ArticleData> {
     return await this.articleService.createArticle(user, createArticleDTO);
@@ -42,7 +40,6 @@ export class ArticleController {
 
   @Put(':slug')
   @UseGuards(JwtAuthGuard)
-  @UsePipes(ValidationPipe)
   async updateArticle(@User() user, @Body('article') updateArticleDTO: UpdateArticleDTO,
                           @Param('slug') slug: string): Promise<ArticleData> {
     return await this.articleService.updateArticle(user, updateArticleDTO, slug);
@@ -56,8 +53,7 @@ export class ArticleController {
 
   @Post(':slug/comments')
   @UseGuards(JwtAuthGuard)
-  @UsePipes(ValidationPipe)
-  async addCommentToArticle(@User() user, addCommentDTO: AddCommentDTO,
+  async addCommentToArticle(@User() user, @Body('comment') addCommentDTO: AddCommentDTO,
                           @Param('slug') slug: string): Promise<CommentData> {
     return await this.articleService.addCommentToArticle(user, addCommentDTO, slug);
   }

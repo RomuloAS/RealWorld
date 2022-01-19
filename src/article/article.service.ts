@@ -34,6 +34,14 @@ const ArticleSelect = {
   author: AuthorSelect
 };
 
+const CommentSelect = {
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  body: true,
+  author: AuthorSelect
+};
+
 @Injectable()
 export class ArticleService {
 
@@ -213,14 +221,14 @@ export class ArticleService {
 
     if (!ArticleExists) {
       throw new HttpException({
-        message: 'Update of a new article failed',
+        message: 'Update of a article failed',
         errors: {article: 'Slug does not represent any Article'}},
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     if (ArticleExists.author.username !== username) {
       throw new HttpException({
-        message: 'Update of a new article failed',
+        message: 'Update of a article failed',
         errors: {article: 'Article does not belong to the current User'}},
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -242,7 +250,7 @@ export class ArticleService {
 
     if (notUnique) {
       throw new HttpException({
-        message: 'Update of a new article failed',
+        message: 'Update of a article failed',
         errors: {article: 'Title must be unique'}},
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -302,14 +310,14 @@ export class ArticleService {
 
     if (!ArticleExists) {
       throw new HttpException({
-        message: 'Deletion of a new article failed',
+        message: 'Deletion of a article failed',
         errors: {article: 'Slug does not represent any Article'}},
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     if (ArticleExists.author.username !== username) {
       throw new HttpException({
-        message: 'Deletion of a new article failed',
+        message: 'Deletion of a article failed',
         errors: {article: 'Article does not belong to the current User'}},
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
@@ -337,19 +345,212 @@ export class ArticleService {
   }
 
   async addCommentToArticle(user, addCommentDTO: AddCommentDTO, slug: string): Promise<CommentData> {
-    return null;
+
+    const { username } = user;
+    const { body } = addCommentDTO;
+
+    const ArticleExists = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: {
+        slug: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!ArticleExists) {
+      throw new HttpException({
+        message: 'Add a Comment to article failed',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const data = {body: body,
+                  author: {connect: {username: username}},
+                  article: {connect: {slug: slug}}
+                };
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: username ? username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    CommentSelect['author'] = {select: authorSelect};
+
+    const comment = await this.prisma.comment.create({
+      data: data,
+      select: CommentSelect
+    });
+
+    return this.createCommentData(comment);
   }
 
   async getCommentsFromArticle(user, slug: string): Promise<CommentsData> {
-    return null;
+
+    const ArticleExists = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: {
+        slug: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!ArticleExists) {
+      throw new HttpException({
+        message: 'Get Comments from article failed',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: user ? user.username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    CommentSelect['author'] = {select: authorSelect};
+
+    const comments = await this.prisma.comment.findMany({
+      where: {
+        article: {
+          slug: slug
+        }
+      },
+      select: CommentSelect,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return {comments: comments.map(comment => this.createCommentData(comment)['comment'])};
   }
 
   async deleteCommentFromArticle(user, slug: string, id: number): Promise<CommentData> {
-    return null;
+
+    const { username } = user;
+
+    const ArticleExists = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: {
+        slug: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!ArticleExists) {
+      throw new HttpException({
+        message: 'Deletion of a Comment failed',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const CommentExists = await this.prisma.comment.findUnique({
+      where: {
+        id: id
+      },
+      select: {
+        id: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!CommentExists) {
+      throw new HttpException({
+        message: 'Deletion of a Comment failed',
+        errors: {article: 'Id does not represent any Comment'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: username ? username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    CommentSelect['author'] = {select: authorSelect}
+
+    const comment = await this.prisma.comment.delete({
+        where: {
+          id: id
+        },
+        select: CommentSelect,
+      });
+
+    return this.createCommentData(comment);
   }
 
   async favoriteArticle(user, slug: string, favorite: boolean = true): Promise<ArticleData> {
-    return null;
+
+    const { username } = user;
+
+    const ArticleExists = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: {
+        slug: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!ArticleExists) {
+      throw new HttpException({
+        message: 'Favorite article failed',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: username ? username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    ArticleSelect['favoritedBy'] = {select: authorSelect}
+    ArticleSelect['author'] = {select: authorSelect}
+
+    const data = {favoritedBy: {}}
+    if (favorite){
+      data.favoritedBy = {connect: {username: username}}
+    } else {
+      data.favoritedBy = {disconnect: {username: username}}
+    }
+
+    const article = await this.prisma.article.update({
+      where: {slug: slug},
+      data: data,
+      select: ArticleSelect
+    });
+
+    return this.createArticleData(article);
   }
 
   private createArticleData(article): ArticleData {
@@ -365,7 +566,7 @@ export class ArticleService {
     const favorited = favoritedBy && favoritedBy.length ? true : false
     const favoritesCount = _count.favoritedBy;
 
-    const ArticleProfile = {
+    const articleProfile = {
       article: {
         slug: slug,
         title: title,
@@ -385,7 +586,32 @@ export class ArticleService {
       }
     };
 
-    return ArticleProfile;
+    return articleProfile;
+  }
+
+  private createCommentData(comment): CommentData {
+
+    const { id, body, createdAt, updatedAt, author } = comment;
+    const { username, followedBy, profile } = author;
+    const { bio, image } = profile;
+    const following = followedBy && followedBy.length ? true : false
+
+    const commentProfile = {
+      comment: {
+        id: id,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        body: body,
+        author: {
+          username: username,
+          bio: bio,
+          image: image,
+          following: following
+        }
+      }
+    };
+
+    return commentProfile;
   }
 
   private ArticleNotFound(){
