@@ -63,7 +63,8 @@ export class ArticleService {
       }
     }
 
-    ArticleSelect['favoritedBy'] = {select: authorSelect}
+    ArticleSelect['favoritedBy'] = {select: authorSelect};
+    ArticleSelect['author'] = {select: authorSelect};
 
     const articles = await this.prisma.article.findMany({
       where: where,
@@ -91,7 +92,8 @@ export class ArticleService {
       }
     }
 
-    ArticleSelect['favoritedBy'] = {select: authorSelect}
+    ArticleSelect['favoritedBy'] = {select: authorSelect};
+    ArticleSelect['author'] = {select: authorSelect};
 
     const articles = await this.prisma.article.findMany({
       where: {author: {username: user.username}},
@@ -180,8 +182,8 @@ export class ArticleService {
       }
     }
 
-    ArticleSelect['favoritedBy'] = {select: authorSelect}
-    ArticleSelect['author'] = {select: authorSelect}
+    ArticleSelect['favoritedBy'] = {select: authorSelect};
+    ArticleSelect['author'] = {select: authorSelect};
 
 
     const article = await this.prisma.article.create({
@@ -193,11 +195,145 @@ export class ArticleService {
   }
 
   async updateArticle(user, updateArticleDTO: UpdateArticleDTO, slug: string): Promise<ArticleData> {
-    return null;
+
+    const { title, description, body } = updateArticleDTO;
+    const { username } = user;
+
+    const ArticleExists = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: {
+        slug: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!ArticleExists) {
+      throw new HttpException({
+        message: 'Update of a new article failed',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    if (ArticleExists.author.username !== username) {
+      throw new HttpException({
+        message: 'Update of a new article failed',
+        errors: {article: 'Article does not belong to the current User'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const notUnique = await this.prisma.article.findFirst({
+      where: {
+        title: title,
+        author: {
+          username: username
+        }
+      },
+      select: {
+        title: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (notUnique) {
+      throw new HttpException({
+        message: 'Update of a new article failed',
+        errors: {article: 'Title must be unique'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const slugCount = await this.prisma.article.count({
+      where: {
+        title: title
+      }
+    });
+
+    const newSlug = `${slugify(title)}-${slugCount + 1}`;
+
+    const data = {title: title,
+                  description: description,
+                  body: body,
+                  slug: newSlug
+                };
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: username ? username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    ArticleSelect['favoritedBy'] = {select: authorSelect}
+    ArticleSelect['author'] = {select: authorSelect}
+
+    const article = await this.prisma.article.update({
+        where: {
+          slug: slug
+        },
+        data: data,
+        select: ArticleSelect,
+      });
+
+    return this.createArticleData(article);
   }
 
   async deleteArticle(user, slug: string): Promise<ArticleData> {
-    return null;
+
+    const { username } = user;
+
+    const ArticleExists = await this.prisma.article.findUnique({
+      where: {
+        slug: slug
+      },
+      select: {
+        slug: true,
+        author: {
+          select: {username: true}
+        }
+      }
+    });
+
+    if (!ArticleExists) {
+      throw new HttpException({
+        message: 'Deletion of a new article failed',
+        errors: {article: 'Slug does not represent any Article'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    if (ArticleExists.author.username !== username) {
+      throw new HttpException({
+        message: 'Deletion of a new article failed',
+        errors: {article: 'Article does not belong to the current User'}},
+        HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    const authorSelect = {...AuthorSelect['select'], 
+      followedBy: {
+        where: {
+          username: username ? username : ''
+        },
+        select: {username: true}
+      }
+    }
+
+    ArticleSelect['favoritedBy'] = {select: authorSelect}
+    ArticleSelect['author'] = {select: authorSelect}
+
+    const article = await this.prisma.article.delete({
+        where: {
+          slug: slug
+        },
+        select: ArticleSelect,
+      });
+
+    return this.createArticleData(article);
   }
 
   async addCommentToArticle(user, addCommentDTO: AddCommentDTO, slug: string): Promise<CommentData> {
