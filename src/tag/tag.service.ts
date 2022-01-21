@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { TagsData } from './tag.interface';
-
-const TagsSelect = {
-  select: {
-    tag: true
-  }
-};
+import { TagsSelect } from './tag.select';
 
 @Injectable()
 export class TagService {

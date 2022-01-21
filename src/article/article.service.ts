@@ -2,45 +2,10 @@ import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { QueryListDTO, QueryFeedDTO, CreateArticleDTO, UpdateArticleDTO, AddCommentDTO } from './dto/article.dto';
 import { ArticleData, ArticlesData, CommentData, CommentsData } from './article.interface';
+import { UserSelect as AuthorSelect } from '../user/user.select';
+import { ArticleSelect, CommentSelect } from './article.select';
+import { FollowedBySelect } from '../common/select/common.select';
 const slugify = require('slugify');
-
-const TagsSelect = {
-  select: {
-    tag: true
-  }
-};
-
-const AuthorSelect = {
-  select: {
-    username: true,
-    profile: {
-      select: {bio: true, image: true},
-    }
-  }
-};
-
-const ArticleSelect = {
-  slug: true,
-  title: true,
-  description: true,
-  body: true,
-  tags: TagsSelect,
-  createdAt: true,
-  updatedAt: true,
-  favoritedBy: AuthorSelect,
-  _count: {
-        select: { favoritedBy: true },
-  },
-  author: AuthorSelect
-};
-
-const CommentSelect = {
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  body: true,
-  author: AuthorSelect
-};
 
 @Injectable()
 export class ArticleService {
@@ -62,14 +27,7 @@ export class ArticleService {
       where['favoritedBy'] = {some: {username: favorited}}
     }
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: user ? user.username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     ArticleSelect['favoritedBy'] = {select: authorSelect};
     ArticleSelect['author'] = {select: authorSelect};
@@ -91,14 +49,7 @@ export class ArticleService {
 
     const { limit, offset } = query;
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: user ? user.username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     ArticleSelect['favoritedBy'] = {select: authorSelect};
     ArticleSelect['author'] = {select: authorSelect};
@@ -181,14 +132,7 @@ export class ArticleService {
                   author: {connect: {username: username}}
                 };
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: user ? user.username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     ArticleSelect['favoritedBy'] = {select: authorSelect};
     ArticleSelect['author'] = {select: authorSelect};
@@ -269,14 +213,7 @@ export class ArticleService {
                   slug: newSlug
                 };
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: username ? username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     ArticleSelect['favoritedBy'] = {select: authorSelect}
     ArticleSelect['author'] = {select: authorSelect}
@@ -322,14 +259,7 @@ export class ArticleService {
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: username ? username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     ArticleSelect['favoritedBy'] = {select: authorSelect}
     ArticleSelect['author'] = {select: authorSelect}
@@ -373,14 +303,7 @@ export class ArticleService {
                   article: {connect: {slug: slug}}
                 };
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: username ? username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     CommentSelect['author'] = {select: authorSelect};
 
@@ -413,14 +336,7 @@ export class ArticleService {
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: user ? user.username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     CommentSelect['author'] = {select: authorSelect};
 
@@ -481,14 +397,7 @@ export class ArticleService {
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: username ? username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     CommentSelect['author'] = {select: authorSelect}
 
@@ -525,14 +434,7 @@ export class ArticleService {
         HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    const authorSelect = {...AuthorSelect['select'], 
-      followedBy: {
-        where: {
-          username: username ? username : ''
-        },
-        select: {username: true}
-      }
-    }
+    const authorSelect = FollowedBySelect(user);
 
     ArticleSelect['favoritedBy'] = {select: authorSelect}
     ArticleSelect['author'] = {select: authorSelect}

@@ -1,12 +1,8 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { ProfileData } from './profile.interface';
+import { UserSelect } from '../user/user.select';
+import { FollowedBySelect } from '../common/select/common.select';
 import { PrismaService } from '../common/prisma/prisma.service';
-
-const select = {
-  username: true,
-  profile: {select: {bio: true, image: true},
-  }
-};
 
 @Injectable()
 export class ProfileService {
@@ -17,14 +13,7 @@ export class ProfileService {
 
     const userProfile = await this.prisma.user.findUnique({
       where: {username: username},
-      select: {...select, 
-              followedBy: {
-                where: {
-                  username: user ? user.username : ''
-                },
-                select: {username: true}
-              }
-            }
+      select: FollowedBySelect(user)
       });
 
     if (!userProfile){
@@ -40,7 +29,7 @@ export class ProfileService {
 
     const userProfile = await this.prisma.user.findUnique({
       where: {username: username},
-      select: select
+      select: UserSelect.select
     });
 
     if (!userProfile){

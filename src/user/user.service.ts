@@ -1,17 +1,11 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { LoginUserDTO, CreateUserDTO, UpdateUserDTO} from './dto/user.dto';
 import { UserData } from './user.interface';
+import { UserSelect } from './user.select';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
-
-const select = {
-  email: true,
-  username: true,
-  profile: {select: {bio: true, image: true},
-  }
-};
 
 @Injectable()
 export class UserService {
@@ -23,7 +17,7 @@ export class UserService {
     
     const user = await this.prisma.user.findUnique({
       where: {email: payload.email},
-      select: {password: true, ...select}
+      select: {password: true, ...UserSelect.select}
     });
 
     if (!user) {
@@ -75,7 +69,7 @@ export class UserService {
 
     const user = await this.prisma.user.create({
       data: data,
-      select: select,
+      select: UserSelect.select,
     });
 
     return this.createUserAuth(user);
@@ -98,7 +92,7 @@ export class UserService {
       const user = await this.prisma.user.update({
         where: {email: oldUser.email},
         data: data,
-        select: select,
+        select: UserSelect.select,
       });
 
       return this.createUserAuth(user);
