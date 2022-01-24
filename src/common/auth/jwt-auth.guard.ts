@@ -5,18 +5,16 @@ import { IS_AUTH_OPTIONAL } from './auth.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-
   constructor(private reflector: Reflector) {
     super();
   }
 
   handleRequest(err, user, info, context, status) {
+    const isAuthOptional = this.reflector.getAllAndOverride<boolean>(
+      IS_AUTH_OPTIONAL,
+      [context.getHandler(), context.getClass()],
+    );
 
-    const isAuthOptional = this.reflector.getAllAndOverride<boolean>(IS_AUTH_OPTIONAL, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-    
     if (isAuthOptional) {
       return user;
     }
@@ -24,8 +22,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new UnauthorizedException();
     }
-    
+
     return user;
   }
-
 }

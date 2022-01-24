@@ -11,9 +11,9 @@ export const ArticleSelect = {
   updatedAt: true,
   favoritedBy: AuthorSelect,
   _count: {
-        select: { favoritedBy: true },
+    select: { favoritedBy: true },
   },
-  author: AuthorSelect
+  author: AuthorSelect,
 };
 
 export const CommentSelect = {
@@ -21,5 +21,5 @@ export const CommentSelect = {
   createdAt: true,
   updatedAt: true,
   body: true,
-  author: AuthorSelect
+  author: AuthorSelect,
 };

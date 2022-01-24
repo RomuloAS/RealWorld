@@ -4,5 +4,5 @@ export interface ProfileData {
     bio: string;
     image: string;
     following: boolean;
-  }
+  };
 }

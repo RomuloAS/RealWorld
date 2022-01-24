@@ -14,8 +14,8 @@ export interface ArticleData {
       bio: string;
       image: string;
       following: boolean;
-    }
-  }
+    };
+  };
 }
 
 export interface ArticlesData {
@@ -23,19 +23,18 @@ export interface ArticlesData {
 }
 
 export interface CommentData {
-
   comment: {
-    id: number,
-    createdAt: Date,
-    updatedAt: Date,
-    body: string,
+    id: number;
+    createdAt: Date;
+    updatedAt: Date;
+    body: string;
     author: {
-      username: string,
-      bio: string,
-      image: string,
-      following: boolean
-    } 
-  }
+      username: string;
+      bio: string;
+      image: string;
+      following: boolean;
+    };
+  };
 }
 
 export interface CommentsData {

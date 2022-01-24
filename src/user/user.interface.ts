@@ -3,7 +3,7 @@ export interface UserData {
     email: string;
     username: string;
     token?: string;
-    bio:   string;
+    bio: string;
     image: string;
-  }
+  };
 }

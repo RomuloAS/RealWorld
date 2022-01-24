@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { useContainer } from 'class-validator';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { PrismaService } from 'nestjs-prisma';
@@ -18,7 +19,8 @@ async function bootstrap() {
   const prismaService: PrismaService = app.get(PrismaService);
   prismaService.enableShutdownHooks(app);
 
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+
   await app.listen(3000);
 }
 bootstrap();
-

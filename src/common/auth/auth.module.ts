@@ -8,11 +8,9 @@ import { JwtStrategy } from './jwt.strategy';
     JwtModule.register({
       secret: jwtConstants.jwtSecret,
       signOptions: { expiresIn: '2h' },
-    })
+    }),
   ],
-  providers: [
-    JwtStrategy
-  ],
-  exports: [JwtStrategy, JwtModule]
+  providers: [JwtStrategy],
+  exports: [JwtStrategy, JwtModule],
 })
 export class AuthModule {}

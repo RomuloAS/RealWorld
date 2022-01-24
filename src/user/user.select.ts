@@ -5,8 +5,8 @@ export const UserSelect = {
     profile: {
       select: {
         bio: true,
-        image: true
+        image: true,
       },
-    }
-  }
+    },
+  },
 };

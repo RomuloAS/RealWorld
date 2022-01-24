@@ -1,5 +1,5 @@
 export const TagsSelect = {
   select: {
-    tag: true
-  }
+    tag: true,
+  },
 };

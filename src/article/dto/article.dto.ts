@@ -1,9 +1,16 @@
-import { IsString, IsOptional, IsInt, Min, MinLength, IsNotEmpty, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  Min,
+  MinLength,
+  IsNotEmpty,
+  IsArray,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { TagDTO } from '../../tag/dto/tag.dto'
+import { TagDTO } from '../../tag/dto/tag.dto';
 
 export class QueryListDTO {
-
   @IsOptional()
   @IsString()
   readonly tag: string;
@@ -28,11 +35,9 @@ export class QueryListDTO {
   @Min(0)
   @Type(() => Number)
   readonly offset: number = 0;
-
 }
 
 export class QueryFeedDTO {
-
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -44,11 +49,9 @@ export class QueryFeedDTO {
   @Min(0)
   @Type(() => Number)
   readonly offset: number = 0;
-
 }
 
 export class CreateArticleDTO {
-
   @IsNotEmpty()
   @IsString()
   readonly title: string;
@@ -64,11 +67,9 @@ export class CreateArticleDTO {
   @IsOptional()
   @IsArray()
   readonly tagList: TagDTO[];
-
 }
 
 export class UpdateArticleDTO {
-
   @IsOptional()
   @IsString()
   readonly title: string;
@@ -80,13 +81,10 @@ export class UpdateArticleDTO {
   @IsOptional()
   @IsString()
   readonly body: string;
-
 }
 
 export class AddCommentDTO {
-
   @IsNotEmpty()
   @IsString()
   readonly body: string;
-
 }

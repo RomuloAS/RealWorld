@@ -8,11 +8,13 @@ import { TagModule } from './tag/tag.module';
 import { PrismaModule } from 'nestjs-prisma';
 
 @Module({
-  imports: [UserModule,
-            ProfileModule,
-            ArticleModule,
-            TagModule,
-            PrismaModule.forRoot({isGlobal: true})],
+  imports: [
+    UserModule,
+    ProfileModule,
+    ArticleModule,
+    TagModule,
+    PrismaModule.forRoot({ isGlobal: true }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

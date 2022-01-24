@@ -6,5 +6,4 @@ export const User = createParamDecorator((data: any, ctx: ExecutionContext) => {
   if (!!req.user) {
     return !!data ? req.user[data] : req.user;
   }
-
 });

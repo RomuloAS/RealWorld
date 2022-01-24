@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Put, Body, UsePipes, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  UsePipes,
+  UseGuards,
+} from '@nestjs/common';
 import { LoginUserDTO, CreateUserDTO, UpdateUserDTO } from './dto/user.dto';
 import { UserData } from './user.interface';
 import { UserService } from './user.service';
@@ -8,7 +16,6 @@ import { JwtAuthGuard } from '../common/auth/jwt-auth.guard';
 
 @Controller()
 export class UserController {
-
   constructor(private readonly userService: UserService) {}
 
   @UsePipes(ValidationPipe)
@@ -26,14 +33,15 @@ export class UserController {
   @Get('user')
   @UseGuards(JwtAuthGuard)
   async getCurrentUser(@User() user): Promise<UserData> {
-    return {user: user};
+    return { user: user };
   }
 
   @Put('user')
   @UseGuards(JwtAuthGuard)
-  async updateUser(@User() user, @Body('user',
-                ValidationPipe) updateUserDTO: UpdateUserDTO): Promise<UserData> {
+  async updateUser(
+    @User() user,
+    @Body('user', ValidationPipe) updateUserDTO: UpdateUserDTO,
+  ): Promise<UserData> {
     return await this.userService.update(user, updateUserDTO);
   }
-
 }

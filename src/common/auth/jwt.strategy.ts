@@ -25,9 +25,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!UserExists) {
       const message = {
-                    message: `User not found`,
-                    errors: { body: [`User not present in the database`]}
-                  };
+        message: `User not found`,
+        errors: { body: [`User not present in the database`] },
+      };
 
       throw new HttpException(message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
