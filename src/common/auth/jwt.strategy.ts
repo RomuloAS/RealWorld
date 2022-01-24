@@ -1,7 +1,7 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
-import { jwtConstants } from './constants';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { jwtConstants } from './jwt.constants';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -24,7 +24,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!UserExists) {
-      return false;
+      const message = {
+                    message: `User not found`,
+                    errors: { body: [`User not present in the database`]}
+                  };
+
+      throw new HttpException(message, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     return payload.user;

@@ -1,16 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaModule } from '../common/prisma/prisma.module';
 
 @Module({
+  imports: [
+    PrismaModule
+  ],
   providers: [
-    ProfileService,
-    PrismaService
+    ProfileService
   ],
   controllers: [
     ProfileController
-  ],
-  exports: [ProfileService]
+  ]
 })
 export class ProfileModule {}
