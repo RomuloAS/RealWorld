@@ -1,5 +1,5 @@
 import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { QueryListDTO, QueryFeedDTO, CreateArticleDTO, UpdateArticleDTO, AddCommentDTO } from './dto/article.dto';
 import { ArticleData, ArticlesData, CommentData, CommentsData } from './article.interface';
 import { UserSelect as AuthorSelect } from '../user/user.select';

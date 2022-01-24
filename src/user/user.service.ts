@@ -3,7 +3,7 @@ import { LoginUserDTO, CreateUserDTO, UpdateUserDTO} from './dto/user.dto';
 import { UserData } from './user.interface';
 import { UserSelect } from './user.select';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { hash, verify } from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 

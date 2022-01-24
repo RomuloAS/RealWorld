@@ -2,7 +2,7 @@ import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { ProfileData } from './profile.interface';
 import { UserSelect } from '../user/user.select';
 import { FollowedBySelect } from '../common/select/common.select';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class ProfileService {

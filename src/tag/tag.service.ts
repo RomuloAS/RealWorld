@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../common/prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { TagsData } from './tag.interface';
 import { TagsSelect } from './tag.select';
 
