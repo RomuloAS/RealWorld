@@ -11,9 +11,13 @@ import { plainToClass } from 'class-transformer';
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {
+    if (!metatype) {
+      return value;
+    }
+
     const object = plainToClass(metatype, value);
 
-    if (!metatype || !this.toValidate(metatype)) {
+    if (!this.toValidate(metatype)) {
       return object;
     }
 
@@ -27,6 +31,7 @@ export class ValidationPipe implements PipeTransform<any> {
       errors.forEach((error) => {
         if (
           error.property === 'password' &&
+          error.constraints &&
           Object.values(error.constraints)
             .join('')
             .includes('regular expression')
@@ -34,7 +39,7 @@ export class ValidationPipe implements PipeTransform<any> {
           errorsObj.errors[error.property] =
             'Password must contain at least 1 upper case letter' +
             ', 1 lower case letter and 1 number or special character';
-        } else {
+        } else if (error.constraints) {
           errorsObj.errors[error.property] = Object.values(error.constraints);
         }
       });

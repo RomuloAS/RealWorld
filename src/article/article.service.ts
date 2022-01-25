@@ -92,7 +92,13 @@ export class ArticleService {
     });
 
     if (!article) {
-      this.articleNotFound();
+      throw new HttpException(
+        {
+          message: 'Article Not Found',
+          errors: { article: 'Slug does not represent any Article' },
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     return this.createArticleData(article);
@@ -214,7 +220,13 @@ export class ArticleService {
     });
 
     if (!comment) {
-      this.commentNotFound();
+      throw new HttpException(
+        {
+          message: 'Deletion of a Comment failed',
+          errors: { article: 'Id does not represent any Comment' },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
 
     return this.createCommentData(comment);
@@ -396,16 +408,6 @@ export class ArticleService {
     return commentProfile;
   }
 
-  private articleNotFound() {
-    throw new HttpException(
-      {
-        message: 'Article Not Found',
-        errors: { article: 'Slug does not represent any Article' },
-      },
-      HttpStatus.NOT_FOUND,
-    );
-  }
-
   private userCreatedArticle(articleE, username: string) {
     const { article } = articleE;
 
@@ -445,16 +447,6 @@ export class ArticleService {
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-  }
-
-  private commentNotFound() {
-    throw new HttpException(
-      {
-        message: 'Deletion of a Comment failed',
-        errors: { article: 'Id does not represent any Comment' },
-      },
-      HttpStatus.UNPROCESSABLE_ENTITY,
-    );
   }
 
   private userCreatedComment(commentE, username: string) {

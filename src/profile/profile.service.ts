@@ -15,7 +15,13 @@ export class ProfileService {
     });
 
     if (!userProfile) {
-      this.userNotFound();
+      throw new HttpException(
+        {
+          message: 'User Not Found',
+          errors: { profile: 'Username does not represent any User' },
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     userProfile['following'] = userProfile.followedBy.length ? true : false;
@@ -28,14 +34,7 @@ export class ProfileService {
     username: string,
     follow: boolean = true,
   ): Promise<ProfileData> {
-    const userProfile = await this.prisma.user.findUnique({
-      where: { username: username },
-      select: UserSelect.select,
-    });
-
-    if (!userProfile) {
-      this.userNotFound();
-    }
+    const userProfile = await this.getProfile(user, username);
 
     const data = { following: {} };
     if (follow) {
@@ -51,17 +50,7 @@ export class ProfileService {
       data: data,
     });
 
-    return this.createUserProfile(userProfile);
-  }
-
-  private userNotFound() {
-    throw new HttpException(
-      {
-        message: 'User Not Found',
-        errors: { profile: 'Username does not represent any User' },
-      },
-      HttpStatus.NOT_FOUND,
-    );
+    return userProfile;
   }
 
   private createUserProfile(user): ProfileData {
