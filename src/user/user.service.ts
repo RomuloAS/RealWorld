@@ -39,29 +39,6 @@ export class UserService {
   async create(payload: CreateUserDTO): Promise<UserData> {
     const { username, email, password } = payload;
 
-    const notUnique = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          {
-            username: username,
-          },
-          {
-            email: email,
-          },
-        ],
-      },
-    });
-
-    if (notUnique) {
-      throw new HttpException(
-        {
-          message: 'Creation of a new user failed',
-          errors: { user: 'Username and email must be unique' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
     const data = {
       username: username,
       email: email,
@@ -86,40 +63,13 @@ export class UserService {
       profile: { update: { bio: bio, image: image } },
     };
 
-    try {
-      const user = await this.prisma.user.update({
-        where: { email: oldUser.email },
-        data: data,
-        select: UserSelect.select,
-      });
+    const user = await this.prisma.user.update({
+      where: { email: oldUser.email },
+      data: data,
+      select: UserSelect.select,
+    });
 
-      return this.createUserAuth(user);
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        const errors = {};
-
-        if (e.code === 'P2002') {
-          const target = e.meta['target'][0];
-          errors[target] = [`${target} is being used by another User`];
-          const message = {
-            message: 'Update User unique constraint violation',
-            errors: errors,
-          };
-
-          throw new HttpException(message, HttpStatus.UNPROCESSABLE_ENTITY);
-        }
-
-        if (e.code === 'P2016') {
-          errors['user'] = [`User not found`];
-          const message = {
-            message: `User to be updated is not present in the database`,
-            errors: errors,
-          };
-
-          throw new HttpException(message, HttpStatus.UNPROCESSABLE_ENTITY);
-        }
-      }
-    }
+    return this.createUserAuth(user);
   }
 
   private createUserAuth(user): UserData {

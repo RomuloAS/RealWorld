@@ -17,14 +17,19 @@ export class IsUserAlreadyExistConstraint
 
   async validate(username: any, args: ValidationArguments) {
     const [relatedPropertyName] = args.constraints;
-    const relatedValue = (args.object as any)[relatedPropertyName];
+    const email = (args.object as any)[relatedPropertyName];
 
     const user = await this.prisma.user.findFirst({
       where: {
-        username: username,
-        email: relatedValue,
+        OR: [
+          {
+            username: username,
+          },
+          {
+            email: email,
+          },
+        ],
       },
-      select: { username: true },
     });
 
     return !user;

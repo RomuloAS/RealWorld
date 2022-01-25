@@ -92,7 +92,7 @@ export class ArticleService {
     });
 
     if (!article) {
-      this.ArticleNotFound();
+      this.articleNotFound();
     }
 
     return this.createArticleData(article);
@@ -111,30 +111,7 @@ export class ArticleService {
     const { username } = user;
     const tags = tagList ? tagList.map((item) => tagsFormat(item)) : [];
 
-    const notUnique = await this.prisma.article.findFirst({
-      where: {
-        title: title,
-        author: {
-          username: username,
-        },
-      },
-      select: {
-        title: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (notUnique) {
-      throw new HttpException(
-        {
-          message: 'Creation of a new article failed',
-          errors: { article: 'Title must be unique' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.titleUniqueness(title, username);
 
     const slugCount = await this.prisma.article.count({
       where: {
@@ -174,62 +151,8 @@ export class ArticleService {
     const { title, description, body } = updateArticleDTO;
     const { username } = user;
 
-    const ArticleExists = await this.prisma.article.findUnique({
-      where: {
-        slug: slug,
-      },
-      select: {
-        slug: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!ArticleExists) {
-      throw new HttpException(
-        {
-          message: 'Update of a article failed',
-          errors: { article: 'Slug does not represent any Article' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    if (ArticleExists.author.username !== username) {
-      throw new HttpException(
-        {
-          message: 'Update of a article failed',
-          errors: { article: 'Article does not belong to the current User' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    const notUnique = await this.prisma.article.findFirst({
-      where: {
-        title: title,
-        author: {
-          username: username,
-        },
-      },
-      select: {
-        title: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (notUnique) {
-      throw new HttpException(
-        {
-          message: 'Update of a article failed',
-          errors: { article: 'Title must be unique' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.userCreatedArticle(await this.getArticle(slug), username);
+    await this.titleUniqueness(title, username);
 
     const slugCount = await this.prisma.article.count({
       where: {
@@ -265,37 +188,7 @@ export class ArticleService {
   async deleteArticle(user, slug: string): Promise<ArticleData> {
     const { username } = user;
 
-    const ArticleExists = await this.prisma.article.findUnique({
-      where: {
-        slug: slug,
-      },
-      select: {
-        slug: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!ArticleExists) {
-      throw new HttpException(
-        {
-          message: 'Deletion of a article failed',
-          errors: { article: 'Slug does not represent any Article' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    if (ArticleExists.author.username !== username) {
-      throw new HttpException(
-        {
-          message: 'Deletion of a article failed',
-          errors: { article: 'Article does not belong to the current User' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.userCreatedArticle(await this.getArticle(slug), username);
 
     const authorSelect = FollowedBySelect(user);
 
@@ -312,6 +205,21 @@ export class ArticleService {
     return this.createArticleData(article);
   }
 
+  async getComment(id: number): Promise<CommentData> {
+    const comment = await this.prisma.comment.findUnique({
+      where: {
+        id: id,
+      },
+      select: CommentSelect,
+    });
+
+    if (!comment) {
+      this.commentNotFound();
+    }
+
+    return this.createCommentData(comment);
+  }
+
   async addCommentToArticle(
     user,
     addCommentDTO: AddCommentDTO,
@@ -320,27 +228,7 @@ export class ArticleService {
     const { username } = user;
     const { body } = addCommentDTO;
 
-    const ArticleExists = await this.prisma.article.findUnique({
-      where: {
-        slug: slug,
-      },
-      select: {
-        slug: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!ArticleExists) {
-      throw new HttpException(
-        {
-          message: 'Add a Comment to article failed',
-          errors: { article: 'Slug does not represent any Article' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.getArticle(slug);
 
     const data = {
       body: body,
@@ -361,27 +249,7 @@ export class ArticleService {
   }
 
   async getCommentsFromArticle(user, slug: string): Promise<CommentsData> {
-    const ArticleExists = await this.prisma.article.findUnique({
-      where: {
-        slug: slug,
-      },
-      select: {
-        slug: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!ArticleExists) {
-      throw new HttpException(
-        {
-          message: 'Get Comments from article failed',
-          errors: { article: 'Slug does not represent any Article' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.getArticle(slug);
 
     const authorSelect = FollowedBySelect(user);
 
@@ -413,49 +281,8 @@ export class ArticleService {
   ): Promise<CommentData> {
     const { username } = user;
 
-    const ArticleExists = await this.prisma.article.findUnique({
-      where: {
-        slug: slug,
-      },
-      select: {
-        slug: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!ArticleExists) {
-      throw new HttpException(
-        {
-          message: 'Deletion of a Comment failed',
-          errors: { article: 'Slug does not represent any Article' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-
-    const CommentExists = await this.prisma.comment.findUnique({
-      where: {
-        id: id,
-      },
-      select: {
-        id: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!CommentExists) {
-      throw new HttpException(
-        {
-          message: 'Deletion of a Comment failed',
-          errors: { article: 'Id does not represent any Comment' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.getArticle(slug);
+    await this.userCreatedComment(await this.getComment(id), username);
 
     const authorSelect = FollowedBySelect(user);
 
@@ -478,27 +305,7 @@ export class ArticleService {
   ): Promise<ArticleData> {
     const { username } = user;
 
-    const ArticleExists = await this.prisma.article.findUnique({
-      where: {
-        slug: slug,
-      },
-      select: {
-        slug: true,
-        author: {
-          select: { username: true },
-        },
-      },
-    });
-
-    if (!ArticleExists) {
-      throw new HttpException(
-        {
-          message: 'Favorite article failed',
-          errors: { article: 'Slug does not represent any Article' },
-        },
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    await this.getArticle(slug);
 
     const authorSelect = FollowedBySelect(user);
 
@@ -589,7 +396,7 @@ export class ArticleService {
     return commentProfile;
   }
 
-  private ArticleNotFound() {
+  private articleNotFound() {
     throw new HttpException(
       {
         message: 'Article Not Found',
@@ -597,5 +404,70 @@ export class ArticleService {
       },
       HttpStatus.NOT_FOUND,
     );
+  }
+
+  private userCreatedArticle(articleE, username: string) {
+    const { article } = articleE;
+
+    if (article.author.username !== username) {
+      throw new HttpException(
+        {
+          message: 'Article operation failed',
+          errors: { article: 'Article does not belong to the current User' },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+  }
+
+  async titleUniqueness(title: string, username: string): Promise<void> {
+    const notUnique = await this.prisma.article.findFirst({
+      where: {
+        title: title,
+        author: {
+          username: username,
+        },
+      },
+      select: {
+        title: true,
+        author: {
+          select: { username: true },
+        },
+      },
+    });
+
+    if (notUnique) {
+      throw new HttpException(
+        {
+          message: 'Creation/Update of an article failed',
+          errors: { article: 'Title must be unique' },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+  }
+
+  private commentNotFound() {
+    throw new HttpException(
+      {
+        message: 'Deletion of a Comment failed',
+        errors: { article: 'Id does not represent any Comment' },
+      },
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+  }
+
+  private userCreatedComment(commentE, username: string) {
+    const { comment } = commentE;
+
+    if (comment.author.username !== username) {
+      throw new HttpException(
+        {
+          message: 'Comment operation failed',
+          errors: { article: 'Comment does not belong to the current User' },
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
   }
 }
