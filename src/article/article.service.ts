@@ -38,7 +38,6 @@ export class ArticleService {
     }
 
     const authorSelect = FollowedBySelect(user);
-
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
@@ -63,7 +62,6 @@ export class ArticleService {
     const { limit, offset } = query;
 
     const authorSelect = FollowedBySelect(user);
-
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
@@ -85,6 +83,10 @@ export class ArticleService {
   }
 
   async getArticle(slug: string): Promise<ArticleData> {
+    const authorSelect = FollowedBySelect("");
+    ArticleSelect['favoritedBy'] = { select: authorSelect };
+    ArticleSelect['author'] = { select: authorSelect };
+
     const article = await this.prisma.article.findUnique({
       where: {
         slug: slug,
@@ -137,7 +139,6 @@ export class ArticleService {
     };
 
     const authorSelect = FollowedBySelect(user);
-
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
@@ -176,7 +177,6 @@ export class ArticleService {
     };
 
     const authorSelect = FollowedBySelect(user);
-
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
@@ -197,7 +197,6 @@ export class ArticleService {
     await this.userCreatedArticle(await this.getArticle(slug), username);
 
     const authorSelect = FollowedBySelect(user);
-
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
@@ -212,6 +211,9 @@ export class ArticleService {
   }
 
   async getComment(id: number): Promise<CommentData> {
+    const authorSelect = FollowedBySelect("");
+    CommentSelect['author'] = { select: authorSelect };
+
     const comment = await this.prisma.comment.findUnique({
       where: {
         id: id,
@@ -249,7 +251,6 @@ export class ArticleService {
     };
 
     const authorSelect = FollowedBySelect(user);
-
     CommentSelect['author'] = { select: authorSelect };
 
     const comment = await this.prisma.comment.create({
@@ -264,7 +265,6 @@ export class ArticleService {
     await this.getArticle(slug);
 
     const authorSelect = FollowedBySelect(user);
-
     CommentSelect['author'] = { select: authorSelect };
 
     const comments = await this.prisma.comment.findMany({
@@ -297,7 +297,6 @@ export class ArticleService {
     await this.userCreatedComment(await this.getComment(id), username);
 
     const authorSelect = FollowedBySelect(user);
-
     CommentSelect['author'] = { select: authorSelect };
 
     const comment = await this.prisma.comment.delete({
@@ -320,7 +319,6 @@ export class ArticleService {
     await this.getArticle(slug);
 
     const authorSelect = FollowedBySelect(user);
-
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
