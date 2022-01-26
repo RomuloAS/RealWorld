@@ -32,14 +32,14 @@ export class UserController {
 
   @Get('user')
   @UseGuards(JwtAuthGuard)
-  async getCurrentUser(@User() user): Promise<UserData> {
+  async getCurrentUser(@User() user: any): Promise<UserData> {
     return { user: user };
   }
 
   @Put('user')
   @UseGuards(JwtAuthGuard)
   async updateUser(
-    @User() user,
+    @User() user: any,
     @Body('user', ValidationPipe) updateUserDTO: UpdateUserDTO,
   ): Promise<UserData> {
     return await this.userService.update(user, updateUserDTO);

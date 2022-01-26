@@ -23,7 +23,7 @@ export class ProfileController {
   @Get(':username')
   @IsAuthOptional()
   async getProfile(
-    @User() user,
+    @User() user: any,
     @Param('username') username: string,
   ): Promise<ProfileData> {
     return await this.profileService.getProfile(user, username);
@@ -31,7 +31,7 @@ export class ProfileController {
 
   @Post(':username/follow')
   async followUser(
-    @User() user,
+    @User() user: any,
     @Param('username') username: string,
   ): Promise<ProfileData> {
     return await this.profileService.followUser(user, username);
@@ -39,7 +39,7 @@ export class ProfileController {
 
   @Delete(':username/follow')
   async unfollowUser(
-    @User() user,
+    @User() user: any,
     @Param('username') username: string,
   ): Promise<ProfileData> {
     return await this.profileService.followUser(user, username, false);

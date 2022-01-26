@@ -28,19 +28,26 @@ export class ValidationPipe implements PipeTransform<any> {
 
     if (errors.length > 0) {
       const errorsObj = { message: 'Validation failed', errors: {} };
-      errors.forEach((error) => {
+      errors.forEach((error: any) => {
+        const property = error.property;
+        const constraints = error.constraints;
+
         if (
-          error.property === 'password' &&
-          error.constraints &&
-          Object.values(error.constraints)
-            .join('')
-            .includes('regular expression')
+          property === 'password' &&
+          constraints &&
+          Object.values(constraints).join('').includes('regular expression')
         ) {
-          errorsObj.errors[error.property] =
-            'Password must contain at least 1 upper case letter' +
-            ', 1 lower case letter and 1 number or special character';
-        } else if (error.constraints) {
-          errorsObj.errors[error.property] = Object.values(error.constraints);
+          errorsObj.errors = {
+            ...errorsObj['errors'],
+            property:
+              'Password must contain at least 1 upper case letter' +
+              ', 1 lower case letter and 1 number or special character',
+          };
+        } else if (constraints) {
+          errorsObj.errors = {
+            ...errorsObj['errors'],
+            property: Object.values(error.constraints),
+          };
         }
       });
 

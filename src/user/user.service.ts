@@ -54,7 +54,7 @@ export class UserService {
     return this.createUserAuth(user);
   }
 
-  async update(oldUser, newData: UpdateUserDTO): Promise<UserData> {
+  async update(oldUser: any, newData: UpdateUserDTO): Promise<UserData> {
     const { email, username, password, image, bio } = newData;
     const data = {
       email: email,
@@ -72,11 +72,17 @@ export class UserService {
     return this.createUserAuth(user);
   }
 
-  private createUserAuth(user): UserData {
+  private createUserAuth(user: any): UserData {
     const { email, username } = user;
     const { bio, image } = user.profile;
     const userAuth = {
-      user: { email: email, username: username, bio: bio, image: image },
+      user: {
+        email: email,
+        username: username,
+        bio: bio,
+        image: image,
+        token: '',
+      },
     };
 
     const token = this.jwtService.sign(userAuth);

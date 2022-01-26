@@ -7,6 +7,7 @@ import {
   UpdateArticleDTO,
   AddCommentDTO,
 } from './dto/article.dto';
+import { TagDTO } from '../tag/dto/tag.dto';
 import {
   ArticleData,
   ArticlesData,
@@ -22,9 +23,9 @@ const slugify = require('slugify');
 export class ArticleService {
   constructor(private prisma: PrismaService) {}
 
-  async listArticles(user, query: QueryListDTO): Promise<ArticlesData> {
+  async listArticles(user: any, query: QueryListDTO): Promise<ArticlesData> {
     const { tag, author, favorited, limit, offset } = query;
-    const where = {};
+    const where = {tags: {}, author: {}, favoritedBy: {}};
 
     if (tag) {
       where['tags'] = { some: { tag: tag } };
@@ -58,7 +59,7 @@ export class ArticleService {
     };
   }
 
-  async feedArticles(user, query: QueryFeedDTO): Promise<ArticlesData> {
+  async feedArticles(user: any, query: QueryFeedDTO): Promise<ArticlesData> {
     const { limit, offset } = query;
 
     const authorSelect = FollowedBySelect(user);
@@ -105,17 +106,16 @@ export class ArticleService {
   }
 
   async createArticle(
-    user,
+    user: any,
     createArticleDTO: CreateArticleDTO,
   ): Promise<ArticleData> {
-    const tagsFormat = (item) => {
-      const tag = item.toString();
+    const tagsFormat = (tag: string) => {
       return { where: { tag: tag }, create: { tag: tag } };
     };
 
     const { title, description, body, tagList } = createArticleDTO;
     const { username } = user;
-    const tags = tagList ? tagList.map((item) => tagsFormat(item)) : [];
+    const tags = tagList ? tagList.map((tag: TagDTO) => tagsFormat(tag.toString())) : [];
 
     await this.titleUniqueness(title, username);
 
@@ -150,7 +150,7 @@ export class ArticleService {
   }
 
   async updateArticle(
-    user,
+    user: any,
     updateArticleDTO: UpdateArticleDTO,
     slug: string,
   ): Promise<ArticleData> {
@@ -191,7 +191,7 @@ export class ArticleService {
     return this.createArticleData(article);
   }
 
-  async deleteArticle(user, slug: string): Promise<ArticleData> {
+  async deleteArticle(user: any, slug: string): Promise<ArticleData> {
     const { username } = user;
 
     await this.userCreatedArticle(await this.getArticle(slug), username);
@@ -233,7 +233,7 @@ export class ArticleService {
   }
 
   async addCommentToArticle(
-    user,
+    user: any,
     addCommentDTO: AddCommentDTO,
     slug: string,
   ): Promise<CommentData> {
@@ -260,7 +260,7 @@ export class ArticleService {
     return this.createCommentData(comment);
   }
 
-  async getCommentsFromArticle(user, slug: string): Promise<CommentsData> {
+  async getCommentsFromArticle(user: any, slug: string): Promise<CommentsData> {
     await this.getArticle(slug);
 
     const authorSelect = FollowedBySelect(user);
@@ -287,7 +287,7 @@ export class ArticleService {
   }
 
   async deleteCommentFromArticle(
-    user,
+    user: any,
     slug: string,
     id: number,
   ): Promise<CommentData> {
@@ -311,7 +311,7 @@ export class ArticleService {
   }
 
   async favoriteArticle(
-    user,
+    user: any,
     slug: string,
     favorite: boolean = true,
   ): Promise<ArticleData> {
@@ -340,7 +340,7 @@ export class ArticleService {
     return this.createArticleData(article);
   }
 
-  private createArticleData(article): ArticleData {
+  private createArticleData(article: any): ArticleData {
     const {
       slug,
       title,
@@ -356,7 +356,7 @@ export class ArticleService {
     const { username, followedBy, profile } = author;
     const { bio, image } = profile;
 
-    const tagList = tags.length ? tags.map((item) => item['tag']) : [];
+    const tagList = tags.length ? tags.map((item: TagDTO) => item['tag']) : [];
     const following = followedBy && followedBy.length ? true : false;
     const favorited = favoritedBy && favoritedBy.length ? true : false;
     const favoritesCount = _count.favoritedBy;
@@ -384,7 +384,7 @@ export class ArticleService {
     return articleProfile;
   }
 
-  private createCommentData(comment): CommentData {
+  private createCommentData(comment: any): CommentData {
     const { id, body, createdAt, updatedAt, author } = comment;
     const { username, followedBy, profile } = author;
     const { bio, image } = profile;
@@ -408,7 +408,7 @@ export class ArticleService {
     return commentProfile;
   }
 
-  private userCreatedArticle(articleE, username: string) {
+  private userCreatedArticle(articleE: ArticleData, username: string) {
     const { article } = articleE;
 
     if (article.author.username !== username) {
@@ -449,7 +449,7 @@ export class ArticleService {
     }
   }
 
-  private userCreatedComment(commentE, username: string) {
+  private userCreatedComment(commentE: CommentData, username: string) {
     const { comment } = commentE;
 
     if (comment.author.username !== username) {

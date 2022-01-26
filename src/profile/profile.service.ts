@@ -8,7 +8,7 @@ import { PrismaService } from 'nestjs-prisma';
 export class ProfileService {
   constructor(private prisma: PrismaService) {}
 
-  async getProfile(user, username: string): Promise<ProfileData> {
+  async getProfile(user: any, username: string): Promise<ProfileData> {
     const userProfile = await this.prisma.user.findUnique({
       where: { username: username },
       select: FollowedBySelect(user),
@@ -24,13 +24,14 @@ export class ProfileService {
       );
     }
 
-    userProfile['following'] = userProfile.followedBy.length ? true : false;
-
-    return this.createUserProfile(userProfile);
+    return this.createUserProfile(
+      userProfile,
+      userProfile.followedBy.length ? true : false,
+    );
   }
 
   async followUser(
-    user,
+    user: any,
     username: string,
     follow: boolean = true,
   ): Promise<ProfileData> {
@@ -38,10 +39,10 @@ export class ProfileService {
 
     const data = { following: {} };
     if (follow) {
-      userProfile['following'] = true;
+      userProfile.profile['following'] = true;
       data.following = { connect: { username: username } };
     } else {
-      userProfile['following'] = false;
+      userProfile.profile['following'] = false;
       data.following = { disconnect: { username: username } };
     }
 
@@ -53,8 +54,8 @@ export class ProfileService {
     return userProfile;
   }
 
-  private createUserProfile(user): ProfileData {
-    const { username, following } = user;
+  private createUserProfile(user: any, following: boolean): ProfileData {
+    const { username } = user;
     const { bio, image } = user.profile;
     const userProfile = {
       profile: {

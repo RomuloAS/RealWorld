@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_AUTH_OPTIONAL } from './auth.decorator';
@@ -9,7 +13,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  handleRequest(err, user, info, context, status) {
+  handleRequest(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+    status: any,
+  ) {
     const isAuthOptional = this.reflector.getAllAndOverride<boolean>(
       IS_AUTH_OPTIONAL,
       [context.getHandler(), context.getClass()],

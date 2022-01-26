@@ -1,6 +1,6 @@
 import { UserSelect } from '../../user/user.select';
 
-export const FollowedBySelect = (user) => {
+export const FollowedBySelect = (user: any) => {
   return {
     ...UserSelect.select,
     followedBy: {

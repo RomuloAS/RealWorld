@@ -38,7 +38,7 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   @IsAuthOptional()
   async listArticles(
-    @User() user,
+    @User() user: any,
     @Query() query: QueryListDTO,
   ): Promise<ArticlesData> {
     return await this.articleService.listArticles(user, query);
@@ -47,7 +47,7 @@ export class ArticleController {
   @Get('feed')
   @UseGuards(JwtAuthGuard)
   async feedArticles(
-    @User() user,
+    @User() user: any,
     @Query() query: QueryFeedDTO,
   ): Promise<ArticlesData> {
     return await this.articleService.feedArticles(user, query);
@@ -61,7 +61,7 @@ export class ArticleController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async createArticle(
-    @User() user,
+    @User() user: any,
     @Body('article') createArticleDTO: CreateArticleDTO,
   ): Promise<ArticleData> {
     return await this.articleService.createArticle(user, createArticleDTO);
@@ -70,7 +70,7 @@ export class ArticleController {
   @Put(':slug')
   @UseGuards(JwtAuthGuard)
   async updateArticle(
-    @User() user,
+    @User() user: any,
     @Body('article') updateArticleDTO: UpdateArticleDTO,
     @Param('slug') slug: string,
   ): Promise<ArticleData> {
@@ -84,7 +84,7 @@ export class ArticleController {
   @Delete(':slug')
   @UseGuards(JwtAuthGuard)
   async deleteArticle(
-    @User() user,
+    @User() user: any,
     @Param('slug') slug: string,
   ): Promise<ArticleData> {
     return await this.articleService.deleteArticle(user, slug);
@@ -93,7 +93,7 @@ export class ArticleController {
   @Post(':slug/comments')
   @UseGuards(JwtAuthGuard)
   async addCommentToArticle(
-    @User() user,
+    @User() user: any,
     @Body('comment') addCommentDTO: AddCommentDTO,
     @Param('slug') slug: string,
   ): Promise<CommentData> {
@@ -108,7 +108,7 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   @IsAuthOptional()
   async getCommentsFromArticle(
-    @User() user,
+    @User() user: any,
     @Param('slug') slug: string,
   ): Promise<CommentsData> {
     return await this.articleService.getCommentsFromArticle(user, slug);
@@ -117,7 +117,7 @@ export class ArticleController {
   @Delete(':slug/comments/:id')
   @UseGuards(JwtAuthGuard)
   async deleteCommentFromArticle(
-    @User() user,
+    @User() user: any,
     @Param('slug') slug: string,
     @Param('id') id: number,
   ): Promise<CommentData> {
@@ -127,7 +127,7 @@ export class ArticleController {
   @Post(':slug/favorite')
   @UseGuards(JwtAuthGuard)
   async favoriteArticle(
-    @User() user,
+    @User() user: any,
     @Param('slug') slug: string,
   ): Promise<ArticleData> {
     return await this.articleService.favoriteArticle(user, slug);
@@ -136,7 +136,7 @@ export class ArticleController {
   @Delete(':slug/favorite')
   @UseGuards(JwtAuthGuard)
   async unfavoriteArticle(
-    @User() user,
+    @User() user: any,
     @Param('slug') slug: string,
   ): Promise<ArticleData> {
     return await this.articleService.favoriteArticle(user, slug, false);
