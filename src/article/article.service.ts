@@ -25,7 +25,7 @@ export class ArticleService {
 
   async listArticles(user: any, query: QueryListDTO): Promise<ArticlesData> {
     const { tag, author, favorited, limit, offset } = query;
-    const where = {tags: {}, author: {}, favoritedBy: {}};
+    const where = { tags: {}, author: {}, favoritedBy: {} };
 
     if (tag) {
       where['tags'] = { some: { tag: tag } };
@@ -51,11 +51,7 @@ export class ArticleService {
       },
     });
 
-    return {
-      articles: articles.map(
-        (article) => this.createArticleData(article)['article'],
-      ),
-    };
+    return this.createArticlesData(articles);
   }
 
   async feedArticles(user: any, query: QueryFeedDTO): Promise<ArticlesData> {
@@ -75,15 +71,11 @@ export class ArticleService {
       },
     });
 
-    return {
-      articles: articles.map(
-        (article) => this.createArticleData(article)['article'],
-      ),
-    };
+    return this.createArticlesData(articles);
   }
 
   async getArticle(slug: string): Promise<ArticleData> {
-    const authorSelect = FollowedBySelect("");
+    const authorSelect = FollowedBySelect('');
     ArticleSelect['favoritedBy'] = { select: authorSelect };
     ArticleSelect['author'] = { select: authorSelect };
 
@@ -117,7 +109,9 @@ export class ArticleService {
 
     const { title, description, body, tagList } = createArticleDTO;
     const { username } = user;
-    const tags = tagList ? tagList.map((tag: TagDTO) => tagsFormat(tag.toString())) : [];
+    const tags = tagList
+      ? tagList.map((tag: TagDTO) => tagsFormat(tag.toString()))
+      : [];
 
     await this.titleUniqueness(title, username);
 
@@ -211,7 +205,7 @@ export class ArticleService {
   }
 
   async getComment(id: number): Promise<CommentData> {
-    const authorSelect = FollowedBySelect("");
+    const authorSelect = FollowedBySelect('');
     CommentSelect['author'] = { select: authorSelect };
 
     const comment = await this.prisma.comment.findUnique({
@@ -380,6 +374,18 @@ export class ArticleService {
     };
 
     return articleProfile;
+  }
+
+  private createArticlesData(articles: any): ArticlesData {
+    const articlesData = {
+      articles: articles.map(
+        (article: any) => this.createArticleData(article)['article'],
+      ),
+      articlesCount: 0,
+    };
+    articlesData['articlesCount'] = articlesData['articles'].length;
+
+    return articlesData;
   }
 
   private createCommentData(comment: any): CommentData {

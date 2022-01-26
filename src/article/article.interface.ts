@@ -20,6 +20,7 @@ export interface ArticleData {
 
 export interface ArticlesData {
   articles: ArticleData['article'][];
+  articlesCount: number;
 }
 
 export interface CommentData {

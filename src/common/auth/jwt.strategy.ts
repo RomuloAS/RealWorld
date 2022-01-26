@@ -8,6 +8,7 @@ import { PrismaService } from 'nestjs-prisma';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private prisma: PrismaService) {
     super({
+      //jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme("Token"),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: jwtConstants.jwtSecret,
