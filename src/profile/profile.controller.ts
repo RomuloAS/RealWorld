@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   UsePipes,
+  HttpCode
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { User } from '../user/user.decorator';
@@ -30,6 +31,7 @@ export class ProfileController {
   }
 
   @Post(':username/follow')
+  @HttpCode(200)
   async followUser(
     @User() user: any,
     @Param('username') username: string,

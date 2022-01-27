@@ -1,0 +1,65 @@
+USER:
+
+curl --header "Content-Type: application/json" --request POST --data '{"user": {"username": "USERNAME", "email": "EMAIL", "password":"PASSWORD"}}' http://HOST:PORT/users/
+
+curl --header "Content-Type: application/json" --request POST --data '{"user": {"email": "EMAIL", "password":"PASSWORD"}}' http://HOST:PORT/users/login
+
+curl --header "Content-Type: application/json" --request GET -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/user/
+
+curl --header "Content-Type: application/json" --request PUT --data '{"user": {"username": "USERNAME", "email": "EMAIL", "password":"PASSWORD", "bio": "BIO", "image": "IMAGE"}}'  -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/user/
+
+_______________________________________________
+
+PROFILE:
+
+curl --header "Content-Type: application/json" --request GET http://HOST:PORT/profiles/USERNAME
+
+curl --header "Content-Type: application/json" --request GET -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/profiles/USERNAME
+
+curl --header "Content-Type: application/json" --request POST -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/profiles/USERNAME/follow
+
+curl --header "Content-Type: application/json" --request DELETE -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/profiles/USERNAME/follow
+
+_______________________________________________
+
+Articles:
+
+curl --header "Content-Type: application/json" --request GET http://HOST:PORT/articles
+
+curl --header "Content-Type: application/json" --request GET -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles
+
+curl --header "Content-Type: application/json" --request GET -G http://HOST:PORT/articles -d tag=TAG -d author=AUTHOR -d favorited=FAVORITED -d limit=LIMIT -d offset=OFFSET
+
+curl --header "Content-Type: application/json" --request GET -H "Authorization: Token JWT_TOKEN" -G http://HOST:PORT/articles -d tag=TAG -d author=AUTHOR -d favorited=FAVORITED -d limit=LIMIT -d offset=OFFSET
+
+curl --header "Content-Type: application/json" --request GET -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/feed
+
+curl --header "Content-Type: application/json" --request GET http://HOST:PORT/articles/SLUG
+
+curl --header "Content-Type: application/json" --request POST --data '{"article": {"title": "TITLE", "description": "DESCRIPTION", "body": "BODY", "tagList": ["TAG"]}}' -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/
+
+curl --header "Content-Type: application/json" --request PUT --data '{"article": {"title": "TITLE", "description": "DESCRIPTION", "body": "BODY"}}' -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG
+
+curl --header "Content-Type: application/json" --request DELETE -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG
+
+curl --header "Content-Type: application/json" --request POST -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG/favorite
+
+curl --header "Content-Type: application/json" --request DELETE -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG/favorite
+
+_______________________________________________
+
+Comments:
+
+curl --header "Content-Type: application/json" --request POST --data '{"comment": {"body": "BODY"}}' -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG/comments
+
+curl --header "Content-Type: application/json" --request GET http://HOST:PORT/articles/SLUG/comments
+
+curl --header "Content-Type: application/json" --request GET -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG/comments
+
+curl --header "Content-Type: application/json" --request DELETE -H "Authorization: Token JWT_TOKEN" http://HOST:PORT/articles/SLUG/comments/ID
+
+_______________________________________________
+
+Tags:
+
+curl --header "Content-Type: application/json" --request GET http://HOST:PORT/tags

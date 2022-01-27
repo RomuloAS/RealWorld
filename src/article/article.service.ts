@@ -153,15 +153,19 @@ export class ArticleService {
     const { username } = user;
 
     await this.userCreatedArticle(await this.getArticle(slug), username);
-    await this.titleUniqueness(title, username);
+    if (title) {
+      await this.titleUniqueness(title, username);
+    }
 
-    const slugCount = await this.prisma.article.count({
-      where: {
-        title: title,
-      },
-    });
+    const slugCount = title
+      ? await this.prisma.article.count({
+          where: {
+            title: title,
+          },
+        })
+      : 0;
 
-    const newSlug = `${slugify(title)}-${slugCount + 1}`;
+    const newSlug = title ? `${slugify(title)}-${slugCount + 1}` : undefined;
 
     const data = {
       title: title,
@@ -348,7 +352,9 @@ export class ArticleService {
     const { username, followedBy, profile } = author;
     const { bio, image } = profile;
 
-    const tagList = tags.length ? tags.map((item: TagDTO) => item['tag']) : [];
+    const tagList = tags.length
+      ? tags.map((item: TagDTO) => item['tag']).sort()
+      : [];
     const following = followedBy && followedBy.length ? true : false;
     const favorited = favoritedBy && favoritedBy.length ? true : false;
     const favoritesCount = _count.favoritedBy;
